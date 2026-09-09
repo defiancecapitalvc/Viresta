@@ -1,13 +1,12 @@
-import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { FiSearch, FiClock, FiUser } from 'react-icons/fi';
-import { getPosts } from '../api/client';
-import { blogCategories as localCategories, blogPosts as localPosts } from '../data/blogPosts';
+import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import { FiClock, FiSearch, FiUser } from "react-icons/fi";
+import { getPosts } from "../api/client";
+import { blogCategories as localCategories, blogPosts as localPosts } from "../data/blogPosts";
 
 function Blog() {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('all');
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("all");
   const [blogPosts, setBlogPosts] = useState(localPosts);
   const [blogCategories, setBlogCategories] = useState(localCategories);
 
@@ -24,89 +23,51 @@ function Blog() {
     const matchesSearch =
       post.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       post.excerpt.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = selectedCategory === 'all' || post.category === selectedCategory;
+    const matchesCategory = selectedCategory === "all" || post.category === selectedCategory;
     return matchesSearch && matchesCategory;
   });
 
   return (
-    <div className="min-h-screen bg-secondary-50 py-16">
-      <div className="container">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-center max-w-3xl mx-auto mb-12"
-        >
-          <h1 className="text-4xl font-bold mb-4">Insights</h1>
-          <p className="text-secondary-600">
-            3D visualization, AR and VR tours, and remote property viewing
-          </p>
-        </motion.div>
+    <div className="px-4 py-6 sm:px-6">
+      <p className="text-xs uppercase tracking-[0.2em] text-zinc-500">Editorial</p>
+      <h1 className="mb-6 text-2xl font-semibold">Insights</h1>
 
-        <div className="max-w-4xl mx-auto mb-12">
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <div className="flex flex-col md:flex-row gap-4">
-              <div className="flex-1">
-                <div className="relative">
-                  <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-secondary-400" />
-                  <input
-                    type="text"
-                    placeholder="Search articles..."
-                    className="input pl-10"
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                  />
-                </div>
-              </div>
-              <div className="w-full md:w-48">
-                <select
-                  className="input"
-                  value={selectedCategory}
-                  onChange={(e) => setSelectedCategory(e.target.value)}
-                >
-                  {blogCategories.map((category) => (
-                    <option key={category.id} value={category.id}>
-                      {category.name}
-                    </option>
-                  ))}
-                </select>
+      <div className="mb-6 flex flex-col gap-3 rounded-2xl border border-white/5 bg-ink-800 p-4 md:flex-row">
+        <div className="relative flex-1">
+          <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500" />
+          <input
+            className="input pl-10"
+            placeholder="Search articles"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </div>
+        <select className="input md:w-56" value={selectedCategory} onChange={(e) => setSelectedCategory(e.target.value)}>
+          {blogCategories.map((category) => (
+            <option key={category.id} value={category.id}>{category.name}</option>
+          ))}
+        </select>
+      </div>
+
+      <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+        {filteredPosts.map((post) => (
+          <Link key={post.id} to={`/blog/${post.slug}`} className="card">
+            <div className="relative h-44">
+              <img src={post.image} alt={post.title} className="h-full w-full object-cover" />
+              <span className="absolute right-3 top-3 rounded-full bg-black/60 px-2.5 py-1 text-xs">
+                {blogCategories.find((c) => c.id === post.category)?.name}
+              </span>
+            </div>
+            <div className="p-4">
+              <h2 className="mb-2 font-semibold">{post.title}</h2>
+              <p className="mb-4 line-clamp-2 text-sm text-zinc-500">{post.excerpt}</p>
+              <div className="flex items-center gap-4 text-xs text-zinc-500">
+                <span className="inline-flex items-center"><FiUser className="mr-1" />{post.author}</span>
+                <span className="inline-flex items-center"><FiClock className="mr-1" />{post.readTime}</span>
               </div>
             </div>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {filteredPosts.map((post, index) => (
-            <motion.article
-              key={post.id}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: index * 0.1 }}
-              className="bg-white rounded-lg shadow-md overflow-hidden"
-            >
-              <Link to={`/blog/${post.slug}`}>
-                <div className="relative h-48">
-                  <img src={post.image} alt={post.title} className="w-full h-full object-cover" />
-                  <div className="absolute top-4 right-4 bg-white px-3 py-1 rounded-full text-sm font-medium text-primary-600">
-                    {blogCategories.find((c) => c.id === post.category)?.name}
-                  </div>
-                </div>
-                <div className="p-6">
-                  <h2 className="text-xl font-semibold mb-3 hover:text-primary-600 transition-colors">
-                    {post.title}
-                  </h2>
-                  <p className="text-secondary-600 mb-4">{post.excerpt}</p>
-                  <div className="flex items-center text-sm text-secondary-500">
-                    <FiUser className="mr-2" />
-                    <span className="mr-4">{post.author}</span>
-                    <FiClock className="mr-2" />
-                    <span>{post.readTime}</span>
-                  </div>
-                </div>
-              </Link>
-            </motion.article>
-          ))}
-        </div>
+          </Link>
+        ))}
       </div>
     </div>
   );
